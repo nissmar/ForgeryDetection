@@ -21,8 +21,8 @@ run_cmd = "main({}, '../../CMFDdb_grip/noise/{}', '../../CMFDdb_grip/noise/{}', 
 for i in tqdm(range(len(noise_values)*80)):
     [forged, gt] = filenames[2*i:2*i+2]
     for j in range(5):
-        fscores_noise[i//5, j, i%5] = eng.eval(run_cmd.format(j+1,forged,gt))
-pickle.dump(fscores_noise, open('../../fscores/noise','rb'))
+        fscores_noise[i%len(noise_values), j, i//len(noise_values)] = eng.eval(run_cmd.format(j+1,forged,gt))
+pickle.dump(fscores_noise, open('../../fscores/noise','wb'))
 
 #############################################################################
 
@@ -34,8 +34,8 @@ run_cmd = "main({}, '../../CMFDdb_grip/rotate/{}', '../../CMFDdb_grip/rotate/{}'
 for i in tqdm(range(len(angle_values)*80)):
     [forged, gt] = filenames[2*i:2*i+2]
     for j in range(5):
-        fscores_rotate[i//5, j, i%5] = eng.eval(run_cmd.format(j+1,forged,gt))
-pickle.dump(fscores_rotate, open('../../fscores/rotate','rb'))
+        fscores_rotate[i%len(angle_values), j, i//len(angle_values)] = eng.eval(run_cmd.format(j+1,forged,gt))
+pickle.dump(fscores_rotate, open('../../fscores/rotate','wb'))
 
 #############################################################################
 
@@ -45,10 +45,10 @@ filenames = pickle.load(open('../../CMFDdb_grip/listdirs/listdir_scale','rb'))
 
 run_cmd = "main({}, '../../CMFDdb_grip/scale/{}', '../../CMFDdb_grip/scale/{}', false)"
 for i in tqdm(range(len(scale_values)*80)):
-    [forged, gt] = filenames[2*i,2*i+2]
+    [forged, gt] = filenames[2*i:2*i+2]
     for j in range(5):
-        fscores_scale[i//5, j, i%5] = eng.eval(run_cmd.format(j+1,forged,gt))
-pickle.dump(fscores_scale, open('../../fscores/scale','rb'))
+        fscores_scale[i%len(scale_values), j, i//len(scale_values)] = eng.eval(run_cmd.format(j+1,forged,gt))
+pickle.dump(fscores_scale, open('../../fscores/scale','wb'))
 
 #############################################################################
 
@@ -58,9 +58,9 @@ filenames = pickle.load(open('../../CMFDdb_grip/listdirs/listdir_jpeg','rb'))
 
 run_cmd = "main({}, '../../CMFDdb_grip/jpeg/{}', '../../CMFDdb_grip/jpeg/{}', false)"
 for i in tqdm(range(len(jpeg_values)*80)):
-    [forged, gt] = filenames[2*i,2*i+2]
+    [forged, gt] = filenames[2*i:2*i+2]
     for j in range(5):
-        fscores_jpeg[i//5, j, i%5] = eng.eval(run_cmd.format(j+1,forged,gt))
-pickle.dump(fscores_jpeg, open('../../fscores/jpeg','rb'))
+        fscores_jpeg[i%len(jpeg_values), j, i//len(jpeg_values)] = eng.eval(run_cmd.format(j+1,forged,gt))
+pickle.dump(fscores_jpeg, open('../../fscores/jpeg','wb'))
 
 #############################################################################
