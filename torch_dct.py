@@ -63,7 +63,15 @@ class DCT_CONV(nn.Module):
         low_freq = torch.sum(low_freq, dim=0) / (self.T - 1)
         return low_freq
 
-    def noise_var(self, output, mean_dct, lowfreq_var, low_val, high_val, f_var=0.01):
+    def highfreq_var(self, output):
+        """low_frequency variance, first T coefficients"""
+        low_freq = output[self.T :, :, :] ** 2  # exclude mean
+        low_freq = torch.sum(low_freq, dim=0) / (self.ksize ** 2 - self.T)
+        return low_freq
+
+    def noise_var(
+        self, output, mean_dct, lowfreq_var, low_val, high_val, f_var=0.01, median=True
+    ):
         """returns relevant noise variance when image value is between low_val and high_val
             f_var: fractions used to estimate noise"""
         # select image values between low_val and high_val
@@ -72,7 +80,7 @@ class DCT_CONV(nn.Module):
         # Select small low_frequency variances (~uniform patches)
         lowf_variances = torch.masked_select(lowfreq_var, mean_mask)
         if lowf_variances.size()[0] == 0:
-            return torch.tensor([]), torch.tensor([])
+            return None
         tresh = torch.quantile(lowf_variances, f_var)
         lowf_mask = (lowfreq_var < tresh) * mean_mask
 
@@ -81,7 +89,9 @@ class DCT_CONV(nn.Module):
         high_freq = torch.sum(high_freq, dim=(1, 2)) / torch.sum(
             lowf_mask
         )  # mean of the variances [ksize**2 - T] vector
-        return torch.median(high_freq)
+        if median:
+            return torch.median(high_freq)
+        return high_freq
 
     def image_variance_hist(self, x, e_per_bin=40000, f_var=0.01):
         """ input: [H,W] tensor
@@ -103,12 +113,12 @@ class DCT_CONV(nn.Module):
             for index in range(0, len(mean_list), e_per_bin):
                 low_val = mean_list[index]
                 high_val = mean_list[min(index + e_per_bin, len(mean_list) - 1)]
-                Lmeans.append((high_val + low_val).item() / 2)
-                Lvars.append(
-                    self.noise_var(
-                        output, mean_dct, lowfreq_var, low_val, high_val, f_var
-                    ).item()
+                this_var = self.noise_var(
+                    output, mean_dct, lowfreq_var, low_val, high_val, f_var
                 )
+                if not (this_var is None):
+                    Lmeans.append((high_val + low_val).item() / 2)
+                    Lvars.append(this_var.item())
         return Lmeans, Lvars
 
     def show_net(self):
@@ -121,8 +131,9 @@ class DCT_CONV(nn.Module):
                 y * self.ksize : (y + 1) * self.ksize,
             ] = self.conv_dct.weight.data[i, 0, :, :]
         plt.imshow(out_img)
+        plt.axis("off")
         plt.show()
 
 
-M = DCT_CONV()
-M.show_net()
+# M = DCT_CONV()
+# M.show_net()

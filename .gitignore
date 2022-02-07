@@ -128,3 +128,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 .Ds_Store
+
+CMFDdb_grip/
+forge_images.ipynb
