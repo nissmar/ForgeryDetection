@@ -48,23 +48,24 @@ def curve_score(Targx, Targy, Testx, Testy):
     """custom score that measures how low is Test compared to Target"""
     sc = 1
     for x, y in zip(Testx, Testy):
-        if x < Targx[0]:  # x>Testx
-            sc += 0
-        elif x >= Targx[-1]:
-            sc += 0
-        else:
-            ind = [e > x for e in Targx].index(1)  # first item > x in Targx
+        if Targx!=[]:
+            if x < Targx[0]:  # x>Testx
+                sc += 0
+            elif x >= Targx[-1]:
+                sc += 0
+            else:
+                ind = [e > x for e in Targx].index(1)  # first item > x in Targx
 
-            a1 = Targx[ind] - x
-            a2 = x - Targx[ind - 1]
+                a1 = Targx[ind] - x
+                a2 = x - Targx[ind - 1]
 
-            targ_y = (Targy[ind] * a2 + Targy[ind - 1] * a1) / (a2 + a1)
+                targ_y = (Targy[ind] * a2 + Targy[ind - 1] * a1) / (a2 + a1)
 
-            sc = min(y / targ_y, sc)
+                sc = min(y / targ_y, sc)
     return 1 - sc
 
 
-def compute_suspicious_pixels(M, im, patch_size=64, e_per_bin=3000, f_var=0.1):
+def compute_suspicious_pixels(M, im, patch_size=64, e_per_bin=1500, f_var=0.3):
     step = patch_size // 2
     n, m = im.shape
     new_n = len(range(0, n - patch_size, step))
